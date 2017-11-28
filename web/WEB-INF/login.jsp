@@ -19,5 +19,7 @@
             <input type="submit" value="Login">
         </form>
         ${errormessage}
+        
+        <a href="forgot?action=ForgotPass">Forgot password</a>
     </body>
 </html>

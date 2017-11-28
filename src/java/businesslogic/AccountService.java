@@ -14,20 +14,22 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.mail.MessagingException;
 import javax.naming.NamingException;
+import servlets.ForgotPasswordServlet;
 
 /**
  *
  * @author awarsyle
  */
 public class AccountService {
-    
+
+    UserDB userDB = new UserDB();
+
     public User checkLogin(String username, String password, String path) {
         User user;
-        
-        UserDB userDB = new UserDB();
+
         try {
             user = userDB.getUser(username);
-            
+
             if (user.getPassword().equals(password)) {
                 // successful login
                 Logger.getLogger(AccountService.class.getName())
@@ -36,31 +38,52 @@ public class AccountService {
                 String email = user.getEmail();
                 try {
                     // WebMailService.sendMail(email, "NotesKeepr Login", "Big brother is watching you!  Hi " + user.getFirstname(), false);
-                    
+
                     HashMap<String, String> contents = new HashMap<>();
                     contents.put("firstname", user.getFirstname());
                     contents.put("date", ((new java.util.Date()).toString()));
-                    
+
                     try {
                         WebMailService.sendMail(email, "NotesKeepr Login", path + "/emailtemplates/login.html", contents);
                     } catch (IOException ex) {
                         Logger.getLogger(AccountService.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                    
-                    
+
                 } catch (MessagingException ex) {
                     Logger.getLogger(AccountService.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (NamingException ex) {
                     Logger.getLogger(AccountService.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                
+
                 return user;
             }
-            
+
         } catch (NotesDBException ex) {
         }
-        
+
         return null;
     }
-    
+
+    public User createEmail(String email, String subject, String path, HashMap<String, String> contents) {
+        User user;
+        user = userDB.getUserByEmail(email);
+        try {
+            WebMailService.sendMail(email, "NotesKeepr Login", path + "/emailtemplates/emailCredentials.html", contents);
+        } catch (IOException ex) {
+            Logger.getLogger(AccountService.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (MessagingException ex) {
+            Logger.getLogger(AccountService.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NamingException ex) {
+            Logger.getLogger(AccountService.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return user;
+    }
+
+    public boolean forgotPassword(String email, String path) throws NotesDBException {
+        if (userDB.getEmail(email) != null) {
+            return true;
+        }
+        return false;
+    }
 }
